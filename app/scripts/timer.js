@@ -1,18 +1,52 @@
 
 var xTimer;
+var lookupLevel = {
+          0 : 'Warm Up', 
+          1 : '6',
+          2 : '7',
+          3 : '8',
+          4 : '9 - HIGH',
+          5 : '6',
+          6 : '7',
+          7 : '8',
+          8 : '9 - HIGH',
+          9 : '6',
+          10: '7',
+          11: '8',
+          12: '9 - HIGH',
+          13: '6',
+          14: '7',
+          15: '8',
+          16: '9',
+          18: '10',
+          19: 'Cool Down',
+          20: 'FINISH!' 
+        };
+var currentMins;
 
 $(document)
     .ready(function(){
-        var cookieName = data.userId + "_" + data.patientId + "_" + data.monthId
-
-        xTimer = new clsStopwatch(parseInt(Cookies.get("time_" +cookieName)||0), {
+      setInterval(function(){
+          var currentMins;
+          try {
+            currentMins = Math.floor(Cookies.get('time') / 60 / 1000) || 0;
+          } catch (e) {
+            console.log(e);
+            currentMins = 0;
+          }
+          var val = lookupLevel[currentMins];
+          $('#target-goal').text(val);
+      }, 100);
+        xTimer = new clsStopwatch(parseInt(Cookies.get('time')||0), {
             onStart: function() {
-                Cookies.set("state_" +cookieName, true)
+                Cookies.set('state', true)
                 $('#time, #clock-icon').addClass('active')
+                toggleStopResetButtons();
             },
             onStop: function() {
-                Cookies.set("state_" +cookieName, false)
+                Cookies.set('state', false)
                 $('#time, #clock-icon').removeClass('active')
+                toggleStopResetButtons();
             },
             onReset: function() {
                 $('#startClock').removeAttr('disabled')
@@ -20,22 +54,19 @@ $(document)
             },
             onUpdate: function() {
                 $('#time').html(this.timeFormatted(true));
-                Cookies.set("time_" +cookieName, xTimer.time())
+                Cookies.set('time', xTimer.time())
             }
         });
 
         $('#time').html(xTimer.timeFormatted(true));
-        if(Cookies.get("state_" +cookieName)=='true')
+        if(Cookies.get('state')=='true'){
             xTimer.start();
+        }
+        toggleStopResetButtons();
     })
     .on('click', '#startClock', function() {
         if(xTimer.time() == 0) {
-            if (confirm('Notice: Do not log CCM time if "Face-to-Face" with the patient!  Proceed now?')) {
-                xTimer.start();
-            } else {
-                xTimer.stop();
-                xTimer.reset();
-            }
+            xTimer.start();
         } else {
             xTimer.start();
         }
@@ -51,12 +82,18 @@ $(document)
         xTimer.stop();
         logTimePost();
     })
-    .on('click', 'button.member-question', function() {
-        xTimer.stop();
-        xTimer.reset();
-        $('#utility-timer').hide(); // hide timer if patient assessment.
-    })
 
+
+
+function toggleStopResetButtons(started){
+  if(Cookies.get('state')=='true' || started == 'true'){
+    $('#stopClock').removeClass('hide');
+    $('#resetClock').addClass('hide');
+  } else {
+    $('#stopClock').addClass('hide');
+    $('#resetClock').removeClass('hide');
+  }
+}
 // Stopwatch class modified from https://gist.github.com/electricg/4372563
 var	clsStopwatch = function(strSecs, options) {
     // Private vars
@@ -77,7 +114,7 @@ var	clsStopwatch = function(strSecs, options) {
         if (options.onUpdate) {
             var _this = this
             interval = setInterval(function() {
-                options.onUpdate.call(_this)
+              options.onUpdate.call(_this)
             }, 1000)
         }
     };
