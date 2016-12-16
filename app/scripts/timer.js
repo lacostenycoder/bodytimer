@@ -2,40 +2,51 @@
 var xTimer;
 var lookupLevel = {
           0 : 'Warm Up', 
-          1 : '6',
-          2 : '7',
-          3 : '8',
-          4 : '9 - HIGH',
-          5 : '6',
-          6 : '7',
-          7 : '8',
-          8 : '9 - HIGH',
-          9 : '6',
-          10: '7',
-          11: '8',
-          12: '9 - HIGH',
-          13: '6',
-          14: '7',
-          15: '8',
-          16: '9',
-          18: '10',
-          19: 'Cool Down',
-          20: 'FINISH!' 
+          1 : 'Warm Up', 
+          2 : '6', 
+          3 : '7', 
+          4 : '8', 
+          5 : '9 - HIGH', 
+          6 : '6', 
+          7 : '7', 
+          8 : '8', 
+          9 : '9 - HIGH', 
+          10: '6', 
+          11: '7', 
+          12: '8', 
+          13: '9 - HIGH', 
+          14: '6', 
+          15: '7', 
+          16: '8', 
+          18: '9', 
+          19: '10', 
+          20: 'Cool Down',
+          21: 'FINISH!'
         };
-var currentMins;
 
+var audioIndex = [4,5,6,7,8,9,6,7,8,9,6,7,8,9,6,7,8,9,10,11]
+var currentMins;
+var currentSecs;
+var playSound;
+var playOnce = true;
+var startSounds;
 $(document)
     .ready(function(){
+      eachMinutePlaySound(startSounds);
       setInterval(function(){
-          var currentMins;
           try {
-            currentMins = Math.floor(Cookies.get('time') / 60 / 1000) || 0;
+            currentMins = getTime('mins');
+            currentSecs = getTime('secs');
           } catch (e) {
-            console.log(e);
+            // console.log(e);
             currentMins = 0;
+            currentSecs = 0;
           }
           var val = lookupLevel[currentMins];
           $('#target-goal').text(val);
+          startSounds = (currentMins == 0 && currentSecs == 0);
+          // console.log(currentSecs);
+          // console.log(startSounds);
       }, 100);
         xTimer = new clsStopwatch(parseInt(Cookies.get('time')||0), {
             onStart: function() {
@@ -51,6 +62,7 @@ $(document)
             onReset: function() {
                 $('#startClock').removeAttr('disabled')
                 $('#time').html(this.timeFormatted(true));
+                Cookies.set('time', 0);
             },
             onUpdate: function() {
                 $('#time').html(this.timeFormatted(true));
@@ -77,14 +89,13 @@ $(document)
     .on('click', '#resetClock', function() {
         xTimer.stop();
         xTimer.reset();
+        Cookies.set('time', 0); 
     })
     .on('click', '#logTime', function() {
         xTimer.stop();
         logTimePost();
     })
-
-
-
+    
 function toggleStopResetButtons(started){
   if(Cookies.get('state')=='true' || started == 'true'){
     $('#stopClock').removeClass('hide');
@@ -147,8 +158,40 @@ var	clsStopwatch = function(strSecs, options) {
     };
 
     this.timeFormatted = function(include_hours) {
+        var include_hours = false;
         var date = new Date(null);
         date.setTime(this.time())
-        return date.toISOString().substr(include_hours ? 11 : 14, include_hours ? 8 : 5).replace(/\:(\d\d)$/,'<span>:</span>$1');
+        return date.toISOString().substr(include_hours ? 11 : 14, include_hours ? 8 : 5).replace(/\:(\d\d)$/,'<span>:</span><span id="clock-seconds">$1</span>');
     };
 };
+
+function playAudio(level) {
+  var filename = '../audio/' + level + '.mp3';
+  var audio = new Audio(filename);
+  audio.play();
+  return true;
+}
+
+function eachMinutePlaySound(start){
+  var mins = getTime('mins');
+  var secs = getTime('secs');
+  setInterval(function(){
+    var localMins = getTime('mins');
+    var localSecs = getTime('secs');
+    var clockSecs = $('#clock-seconds').text();
+    if(Cookies.get('state')=='true' && clockSecs < 1) {
+      playSound = audioIndex[currentMins];
+      console.log(playSound);
+      playAudio(playSound);
+    }
+  }, 1000);
+
+}
+
+function getTime(minSec){
+  if(minSec == 'mins'){
+    return Math.floor(Cookies.get('time') / 60 / 1000) || 0;
+  } else {
+    return Math.floor(Cookies.get('time') / 1000) || 0;
+  }
+}
