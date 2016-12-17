@@ -21,6 +21,10 @@
   font-size: 1.4em;
 }
 
+.jumbotron {
+  background-color: #81bda9;
+}
+
 
 @keyframes blink-animation {
   to {
@@ -60,15 +64,3 @@ select:focus,
 button:focus {
     outline: none;
 }
-// $start-color: #81bda9;
-// $stop-color: #ff6060;
-// $reset-color:#fce479;
-// $logTime-color: #ffffff;
-// 
-// #startClock{ background-color: $start-color;}
-// #stopClock{ background-color: $stop-color;}
-// #resetClock{ background-color: $reset-color;}
-// 
-// #startClock:hover{ background-color: darken($start-color, 10%);}
-// #stopClock:hover{ background-color: darken($stop-color, 10%);}
-// #resetClock:hover{ background-color: darken($reset-color,15%);}

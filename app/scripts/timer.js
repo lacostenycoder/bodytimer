@@ -24,30 +24,37 @@ var lookupLevel = {
           21: 'FINISH!'
         };
 
-var audioIndex = [4,5,6,7,8,9,6,7,8,9,6,7,8,9,6,7,8,9,10,11]
+// var audioIndex = [4,5,6,7,8,9,6,7,8,9,6,7,8,9,6,7,8,9,10,11]
+var audioIndex = (function(){
+  var arr = [];
+  var i;
+  for(i=4;i<11;i++){ 
+    arr.push(i); 
+  }
+  return arr;
+})();
+// var audioObjects = {};
 var currentMins;
 var currentSecs;
 var playSound;
-var playOnce = true;
 var startSounds;
+
 $(document)
     .ready(function(){
-      eachMinutePlaySound(startSounds);
+				eachMinutePlaySound(startSounds);
       setInterval(function(){
           try {
             currentMins = getTime('mins');
             currentSecs = getTime('secs');
           } catch (e) {
-            // console.log(e);
+            console.log(e);
             currentMins = 0;
             currentSecs = 0;
           }
           var val = lookupLevel[currentMins];
           $('#target-goal').text(val);
           startSounds = (currentMins == 0 && currentSecs == 0);
-          // console.log(currentSecs);
-          // console.log(startSounds);
-      }, 100);
+      }, 1000);
         xTimer = new clsStopwatch(parseInt(Cookies.get('time')||0), {
             onStart: function() {
                 Cookies.set('state', true)
@@ -165,12 +172,6 @@ var	clsStopwatch = function(strSecs, options) {
     };
 };
 
-function playAudio(level) {
-  var filename = '../audio/' + level + '.mp3';
-  var audio = new Audio(filename);
-  audio.play();
-  return true;
-}
 
 function eachMinutePlaySound(start){
   var mins = getTime('mins');
@@ -179,10 +180,8 @@ function eachMinutePlaySound(start){
     var localMins = getTime('mins');
     var localSecs = getTime('secs');
     var clockSecs = $('#clock-seconds').text();
-    if(Cookies.get('state')=='true' && clockSecs < 1) {
-      playSound = audioIndex[currentMins];
-      console.log(playSound);
-      playAudio(playSound);
+    if(Cookies.get('state')=='true' && getTime(secs) < 1) {
+      playAudio(audioIndex[currentMins]);
     }
   }, 1000);
 
@@ -194,4 +193,24 @@ function getTime(minSec){
   } else {
     return Math.floor(Cookies.get('time') / 1000) || 0;
   }
+}
+
+
+function playAudio(level) {
+  var output;
+  switch (level) {
+    case 3:
+      output = 'Begin warm-up.'
+      break;
+    case 4:
+      output = 'Warm Up. Level 5'
+      break;
+    case ([5,9,13].indexOf(level) > -1):
+      output = 'Level ' + level + '. High Point';
+      break;
+    default:
+      output = 'Level ' + level;
+  }
+  var msg = new SpeechSynthesisUtterance(output);
+  window.speechSynthesis.speak(msg);
 }
