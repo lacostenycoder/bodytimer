@@ -1,60 +1,52 @@
-
 var xTimer;
-var lookupLevel = {
-          0 : 'Warm Up', 
-          1 : 'Warm Up', 
-          2 : '6', 
-          3 : '7', 
-          4 : '8', 
-          5 : '9 - HIGH', 
-          6 : '6', 
-          7 : '7', 
-          8 : '8', 
-          9 : '9 - HIGH', 
-          10: '6', 
-          11: '7', 
-          12: '8', 
-          13: '9 - HIGH', 
-          14: '6', 
-          15: '7', 
-          16: '8', 
-          18: '9', 
-          19: '10', 
-          20: 'Cool Down',
-          21: 'FINISH!'
+var data = {
+          0 : {note: 'Warm Up', audio: 'Warmup.'}, 
+          1 : {note: 'Warm Up', audio: 'Warmup. One more minute.'}, 
+          2 : {note: '6', audio: '6'}, 
+          3 : {note: '7', audio: '7'}, 
+          4 : {note: '8', audio: '8'}, 
+          5 : {note: '9 HIGH POINT', audio: '9. High Point.'}, 
+          6 : {note: '6', audio: '6'}, 
+          7 : {note: '7', audio: '7'}, 
+          8 : {note: '8', audio: '8'}, 
+          9 : {note: '9 HIGH POINT', audio:'9. High Point.'}, 
+          10: {note: '6', audio: '6' }, 
+          11: {note: '7', audio: '7'}, 
+          12: {note: '8', audio: '8'}, 
+          13: {note: '9 HIGH POINT', audio:'9. High Point.'}, 
+          14: {note: '6', audio: '6'}, 
+          15: {note: '7', audio: '7'}, 
+          16: {note: '8', audio: '8'}, 
+          18: {note: '9', audio: '9. High Point.'}, 
+          19: {note: '10', audio:'10. Burn-it-out!.'}, 
+          20: {note: 'Cool Down', audio: 'Cool down.'},
+          21: {note: 'FINISH!', audio: 'Finished. Great workout!'}
         };
+        
 
-// var audioIndex = [4,5,6,7,8,9,6,7,8,9,6,7,8,9,6,7,8,9,10,11]
-var audioIndex = (function(){
-  var arr = [];
-  var i;
-  for(i=4;i<11;i++){ 
-    arr.push(i); 
+function initMinCookie(){
+  if(!Cookies.get('time')) {
+    Cookies.set('time', 0);
   }
-  return arr;
-})();
-// var audioObjects = {};
-var currentMins;
-var currentSecs;
-var playSound;
-var startSounds;
+}
+
 
 $(document)
     .ready(function(){
-				eachMinutePlaySound(startSounds);
+      initMinCookie();
       setInterval(function(){
-          try {
-            currentMins = getTime('mins');
-            currentSecs = getTime('secs');
-          } catch (e) {
-            console.log(e);
-            currentMins = 0;
-            currentSecs = 0;
+          var minIndex = getTime('mins');
+          var secsInterval = getTime('secs');
+          var stateInterval = Cookies.get('state')
+          var textGoal = data[minIndex]['note'];
+          $('#target-goal').text(textGoal);
+          if(stateInterval == 'true' && getTime('secs') % 60 == 0){
+            var index = getTime('mins')
+            playAudio(data[index]);
+            console.log('Total Mins: ' + index);
           }
-          var val = lookupLevel[currentMins];
-          $('#target-goal').text(val);
-          startSounds = (currentMins == 0 && currentSecs == 0);
       }, 1000);
+      
         xTimer = new clsStopwatch(parseInt(Cookies.get('time')||0), {
             onStart: function() {
                 Cookies.set('state', true)
@@ -157,6 +149,7 @@ var	clsStopwatch = function(strSecs, options) {
             interval = null
         }
         if (options.onReset) options.onReset.call(this)
+        Cookies.set('mins', 0);
     };
 
     // Duration
@@ -172,21 +165,6 @@ var	clsStopwatch = function(strSecs, options) {
     };
 };
 
-
-function eachMinutePlaySound(start){
-  var mins = getTime('mins');
-  var secs = getTime('secs');
-  setInterval(function(){
-    var localMins = getTime('mins');
-    var localSecs = getTime('secs');
-    var clockSecs = $('#clock-seconds').text();
-    if(Cookies.get('state')=='true' && getTime(secs) < 1) {
-      playAudio(audioIndex[currentMins]);
-    }
-  }, 1000);
-
-}
-
 function getTime(minSec){
   if(minSec == 'mins'){
     return Math.floor(Cookies.get('time') / 60 / 1000) || 0;
@@ -195,21 +173,10 @@ function getTime(minSec){
   }
 }
 
-
-function playAudio(level) {
-  var output;
-  switch (level) {
-    case 3:
-      output = 'Begin warm-up.'
-      break;
-    case 4:
-      output = 'Warm Up. Level 5'
-      break;
-    case ([5,9,13].indexOf(level) > -1):
-      output = 'Level ' + level + '. High Point';
-      break;
-    default:
-      output = 'Level ' + level;
+function playAudio(data) {
+  var output = data['audio'];
+  if(parseInt(output)){
+    output = 'Level ' + output;
   }
   var msg = new SpeechSynthesisUtterance(output);
   window.speechSynthesis.speak(msg);

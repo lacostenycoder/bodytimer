@@ -68,6 +68,20 @@ body {
   }
 }
 
+.navbar {
+  min-height:10px; //* or whatever height you require
+}
+
+.header, .footer {
+  border: none;
+  text-align: center;
+}
+
+.header h3 {
+  line-height: 24px;
+  padding-bottom: 0;
+}
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
   .container {
@@ -84,7 +98,8 @@ body {
 
   /* Space out the masthead */
   .header {
-    margin-bottom: 30px;
+    // display: none;
+    margin-bottom: 10px;
   }
 
   /* Remove the bottom border on the jumbotron for visual effect */
